@@ -6,7 +6,7 @@
     include("tablero.php");
     $game = new tablero();
 
-    if(!isset($_SESSION["tablero"])){
+    if(!isset($_SESSION["tablero"]) && !isset($_SESSION["mostrar"])){
 
         $_SESSION["juego"] = true;
         $game->generar();
