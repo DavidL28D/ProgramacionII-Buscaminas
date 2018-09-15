@@ -9,10 +9,11 @@
     if(!isset($_SESSION["tablero"]) && !isset($_SESSION["mostrar"])){
 
         $_SESSION["juego"] = true;
+        $_SESSION["banderas"] = 10;
         $game->generar();
         
     }else{
-        $game->comprobar($_GET["fila"], $_GET["columna"]);
+        $game->comprobar($_GET["fila"], $_GET["columna"], $_GET["bandera"]);
     }
 
 ?>
@@ -62,6 +63,9 @@
         <script type="text/javascript">
             function evento(a, b){
                 document.location = "index.php?fila="+a+"&columna="+b;
+            }
+            function bandera(a, b, c){
+                document.location = "index.php?fila="+a+"&columna="+b+"&bandera="+1;
             }
         </script> 
 

@@ -7,6 +7,7 @@ class tablero{
 
         unset($_SESSION["tablero"]);
         unset($_SESSION["mostrar"]);
+        unset($_SESSION["banderas"]);
 
         for($i=0; $i<8; $i++){
             for($j=0; $j<8; $j++){
@@ -81,30 +82,26 @@ class tablero{
         }
 
         $_SESSION["tablero"] = $matriz;
+        $_SESSION["banderas"] = 10;
 
     }
 
     public function mostrar(){
 
         $matriz = $_SESSION["mostrar"];
-        
-        echo"Mostrar";
+        $banderas = $_SESSION["banderas"];
+
+        echo"<h1>Busca minas</h1>";
+        echo"<h2>Banderas disponibles: $banderas</h2>";
         echo"<table>";
         for($i=0; $i<8; $i++){
             echo "<tr>";
             for($j=0; $j<8; $j++){
                 
-                /*
-                if($matriz[$i][$j] != 0){
-                    $dato = 0;
-                }else{
-                     $dato = $matriz[$i][$j];
-                }
-                */
                 $dato = $matriz[$i][$j];
 
                 echo "<td>
-                <a onclick='evento($i, $j)'>
+                <a onWheel='bandera($i, $j)', onclick='evento($i, $j)'>
                 <img src = 'img/", $dato,".png'/>
                 </a>
                 </td>";
@@ -114,7 +111,7 @@ class tablero{
         }
         echo"</table>";
         
-        
+        /*
         $matriz = $_SESSION["tablero"];
         echo"</br>";  
         echo "Tablero<br/>";    
@@ -124,48 +121,56 @@ class tablero{
             } 
             echo"<br/>";
         }
-
+        */
+        
     }
 
-    public function comprobar($y, $x){
+    public function comprobar($y, $x, $b){
 
         $matriz = $_SESSION["tablero"];
         $aux = $_SESSION["mostrar"];
+        $banderas = $_SESSION["banderas"];
 
-        if($matriz[$y][$x] == 9){
+        if($b == 1){
 
-            $_SESSION["juego"] = false;
-            echo '<script type="text/javascript">alert("Has perdido. Intentalo de nuevo!!");</script>';
+            if($aux[$y][$x] == 12){
 
-            echo "<div class='container-fluid'";
-            echo"<br/><br/><table>";
-            for($i=0; $i<8; $i++){
-                echo "<tr>";
-                for($j=0; $j<8; $j++){
-                        
-                    echo "<td>
-                    <a onclick='evento($i, $j)'>
-                    <img src = 'img/", $matriz[$i][$j],".png'/>
-                    </a>
-                    </td>";
-                            
-                }
-                echo "</tr>";
+                $aux[$y][$x] = 0;
+                $_SESSION["mostrar"] = $aux;
+                $banderas++;
+                $_SESSION["banderas"] = $banderas;
+
+            }else if($aux[$y][$x] == 0 && $banderas > 0){
+
+                $aux[$y][$x] = 12;
+                $_SESSION["mostrar"] = $aux;
+                $banderas--;
+                $_SESSION["banderas"] = $banderas;
+
             }
-            echo"</table>";
-            echo"</div>";
-            
-        }else if($matriz[$y][$x] > 0 && $matriz[$y][$x] < 9){
 
-            $aux[$y][$x] = $matriz[$y][$x];
-            $_SESSION["mostrar"] = $aux;
+            tablero::ganador();
 
-        }else if($matriz[$y][$x] == 0){
+        }else{
 
-            tablero::abrir($y, $x);
+            tablero::perdio($y, $x);
+
+            if($aux[$y][$x] != 12){
+                
+                if($matriz[$y][$x] > 0 && $matriz[$y][$x] < 9){
+        
+                    $aux[$y][$x] = $matriz[$y][$x];
+                    $_SESSION["mostrar"] = $aux;
+        
+                }else if($matriz[$y][$x] == 0){
+        
+                    tablero::abrir($y, $x);
+        
+                }
+
+            }
 
         }
-
 
     }
 
@@ -173,26 +178,32 @@ class tablero{
 
         $matriz = $_SESSION["tablero"];
         $aux = $_SESSION["mostrar"];
+        $banderas = $_SESSION["banderas"];
 
         if($matriz[$i][$j] != 9){
 
             if($matriz[$i][$j] == 0){
 
+                if($aux[$i][$j] == 12){
+                    $banderas++;
+                    $_SESSION["banderas"] = $banderas;
+                }
+
                 $aux[$i][$j] = 11;
                 $matriz[$i][$j] = 11;
-
                 $_SESSION["mostrar"] = $aux;
                 $_SESSION["tablero"] = $matriz;
 
                 // N
                 if($i-1 >= 0){
                     tablero::abrir($i-1, $j);
-                    //echo "nueva fila: $i, vieja fila: $i";
                 }
 
                 // NE
                 if($i-1 >= 0 && $j+1 < 8){
-                    tablero::abrir($i-1, $j+1);
+                    if($matriz[$i-1][$j+1] != 0){
+                        tablero::abrir($i-1, $j+1);
+                    }
                 }
                 
                 // E
@@ -202,7 +213,9 @@ class tablero{
 
                 // SE
                 if($i+1 < 8 && $j+1 < 8){
-                    tablero::abrir($i+1, $j+1);
+                    if($matriz[$i+1][$j+1] != 0){
+                        tablero::abrir($i+1, $j+1);
+                    }
                 }
 
                 // S
@@ -212,7 +225,9 @@ class tablero{
 
                 // SO
                 if($i+1 < 8 && $j-1 >= 0){
-                    tablero::abrir($i+1, $j-1);
+                    if($matriz[$i+1][$j-1] != 0){
+                        tablero::abrir($i+1, $j-1);
+                    }
                 }
 
                 // O
@@ -222,10 +237,17 @@ class tablero{
 
                 // NO
                 if($i-1 >= 0 && $j-1 >= 0){
-                    tablero::abrir($i-1, $j-1);
+                    if($matriz[$i-1][$j-1] != 0){
+                        tablero::abrir($i-1, $j-1);
+                    }
                 }
                 
             }else if($matriz[$i][$j] > 0 && $matriz[$i][$j] < 9){
+
+                if($aux[$i][$j] == 12){
+                    $banderas++;
+                    $_SESSION["banderas"] = $banderas;
+                }
 
                 $aux[$i][$j] = $matriz[$i][$j];
                 
@@ -236,6 +258,91 @@ class tablero{
 
         }
         
+    }
+
+    public function ganador(){
+
+        $matriz = $_SESSION["tablero"];
+        $aux = $_SESSION["mostrar"];
+        $win = 0;
+
+        for ($i=0; $i < 8; $i++) { 
+            for ($j=0; $j < 8; $j++) { 
+                if($matriz[$i][$j] == 9 && $aux[$i][$j] == 12){
+                    $win++;
+                }
+            }
+        }
+
+        if($win == 10){
+            $_SESSION["juego"] = false;
+            echo '<script type="text/javascript">alert("Has Ganado, vuelve a jugar!!");</script>';
+
+            echo "<div class='container-fluid'";
+                    echo"<br/><br/><table>";
+                    for($i=0; $i<8; $i++){
+                        echo "<tr>";
+                        for($j=0; $j<8; $j++){
+
+                            if($matriz[$i][$j] == 11){
+                                $dato = 0;
+                            }else if($matriz[$i][$j] == 9){
+                                $dato = 12;
+                            }else{
+                                $dato = $matriz[$i][$j];
+                            }
+                                
+                            echo "<td>
+                            <a>
+                            <img src = 'img/", $dato,".png'/>
+                            </a>
+                            </td>";
+                                    
+                        }
+                        echo "</tr>";
+                    }
+                    echo"</table>";
+                    echo"</div>";
+        }
+
+    }
+
+    public function perdio($y, $x){
+
+        $matriz = $_SESSION["tablero"];
+        $aux = $_SESSION["mostrar"];
+
+        if($matriz[$y][$x] == 9 && $aux[$y][$x] != 12){
+
+            $_SESSION["juego"] = false;
+            echo '<script type="text/javascript">alert("Has perdido. Intentalo de nuevo!!");</script>';
+
+            echo "<div class='container-fluid'";
+            echo"<br/><br/><table>";
+            for($i=0; $i<8; $i++){
+                echo "<tr>";
+                for($j=0; $j<8; $j++){
+
+                    if($matriz[$i][$j] == 11){
+                        $dato = 0;
+                    }else{
+                        $dato = $matriz[$i][$j];
+                    }
+  
+                    echo "<td>
+                    <a>
+                    <img src = 'img/", $dato,".png'/>
+                    </a>
+                    </td>";
+                            
+                }
+                echo "</tr>";
+            }
+            echo"</table>";
+            echo"</div>";
+            
+        }
+
     }
     
 }
