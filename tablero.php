@@ -92,6 +92,7 @@ class tablero{
         $banderas = $_SESSION["banderas"];
 
         echo"<h1>Busca minas</h1>";
+        echo"<p>Click Izquierdo para abrir una casilla.<br>Girar la rueda para colocar una bandera.</p>";
         echo"<h2>Banderas disponibles: $banderas</h2>";
         echo"<table>";
         for($i=0; $i<8; $i++){
